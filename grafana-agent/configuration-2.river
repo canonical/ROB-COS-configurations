@@ -2,10 +2,6 @@ logging {
 	level = "error"
 }
 
-robcos {
-    http_address = "my-rob-cos"
-}
-
 prometheus.exporter.unix "default" {
 	// enables only systemd and filesystem metrics
 	set_collectors = ["systemd", "filesystem"]
@@ -26,7 +22,7 @@ prometheus.scrape "default" {
 
 prometheus.remote_write "default" {
 	endpoint {
-		url = "http://" + robcos.http_address + "/cos-prometheus-0/api/v1/write"
+		url = "http://" + "rob-cos-ip" + "/cos-prometheus-0/api/v1/write"
 	}
 }
 
@@ -35,13 +31,13 @@ loki.source.journal "read" {
 	matches        = "turtlebot3c"
 	forward_to     = [loki.write.endpoint.receiver]
 	format_as_json = true
-	labels         = {component = "loki.source.journal"}
+	labels         = {component = "loki.source.journal", instance = "MyInstance"}
 	max_age        = "1h"
 	
 }
 
 loki.write "endpoint" {
 	endpoint {
-		url = "http://" + robcos.http_address + "/cos-loki-0/loki/api/v1/push"
+		url = "http://" + "rob-cos-ip" + "/cos-loki-0/loki/api/v1/push"
 	}
 }
