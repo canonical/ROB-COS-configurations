@@ -23,6 +23,9 @@ prometheus.scrape "default" {
 }
 
 prometheus.remote_write "default" {
+	external_labels = {
+        device_instance = "MyInstance",
+    }
 	endpoint {
 		url = "http://" + "rob-cos-ip" + "/cos-prometheus-0/api/v1/write"
 	}
