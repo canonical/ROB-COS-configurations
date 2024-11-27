@@ -1,0 +1,47 @@
+logging {
+	level = "error"
+}
+
+robcos {
+    http_address = "my-rob-cos"
+}
+
+prometheus.exporter.unix "default" {
+	// enables only systemd and filesystem metrics
+	set_collectors = ["systemd", "filesystem"]
+}
+
+prometheus.scrape "default" {
+	targets = concat(
+		prometheus.exporter.unix.default.targets,
+		[{
+			// Self-collect metrics
+			job         = "agent",
+			__address__ = "127.0.0.1:12345",
+		}],
+	)
+
+	forward_to = [prometheus.remote_write.default.receiver]
+}
+
+prometheus.remote_write "default" {
+	endpoint {
+		url = "http://" + robcos.http_address + "/cos-prometheus-0/api/v1/write"
+	}
+}
+
+loki.source.journal "read" {
+	// only send turtlebot3c snaps logs
+	matches        = "turtlebot3c"
+	forward_to     = [loki.write.endpoint.receiver]
+	format_as_json = true
+	labels         = {component = "loki.source.journal"}
+	max_age        = "1h"
+	
+}
+
+loki.write "endpoint" {
+	endpoint {
+		url = "http://" + robcos.http_address + "/cos-loki-0/loki/api/v1/push"
+	}
+}
