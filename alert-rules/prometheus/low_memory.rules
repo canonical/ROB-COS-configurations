@@ -1,0 +1,21 @@
+groups:
+  - name: robot-2-low-memory
+    rules:
+    - alert: Robot2LowMemory
+      annotations:
+        description: "Low memory alert specific to robot-2"
+        summary: "Robot {{ $labels.instance }} has less than 1 GB of memory free."
+      expr: (node_memory_MemFree_bytes{device_instance="robot-2"})/1e9 < 1
+      for: 5m
+      labels:
+        severity: critical
+  - name: low-memory
+    rules:
+    - alert: LowMemory
+      annotations:
+        description: "Generic low memory alert"
+        summary: "Robot {{ $labels.instance }} has less than 1 GB of memory free."
+      expr: (node_memory_MemFree_bytes{})/1e9 < 1
+      for: 5m
+      labels:
+        severity: critical
